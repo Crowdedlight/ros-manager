@@ -21,6 +21,10 @@ Rust code, how to trigger react to callbacks, get and set properties and use bas
     cargo generate --git slint-ui/slint-rust-template --name my-project
     cd my-project
     ```
+4. Install dependencies
+    ```
+    sudo apt install libxcb-shape0-dev libxcb-xfixes0-dev
+    ```
 3. Build with cargo
     ```
     cargo build
