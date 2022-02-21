@@ -1,42 +1,26 @@
-# Slint Rust Template
+# Ros Manager
 
-A template for a Rust application that's using [Slint](https://slint-ui.com) for the user interface.
+A gui tool to see and choose ros workspace. Shows in a list the current ros workspaces and gives you buttons to quickly start terminals that is cd'ed, sourced and ready to build and run applications in the workspace. 
 
-## About
+Ideas:  
+* Include button for simulation and launching gazebo-ros   
+* Auto populate workspaces based on top folder. All workspaces are in each of their folders inside the root folder  
+* Settings to set root-folder  
+* Include node/package names inside the workspaces in overview  
+* auto detech ros1 or ros2? (potentially by install folder or if we got another hidden specific file)  
+* include showing launch files? or maybe choose launch files too?
 
-This template helps you get started developing a Rust application with Slint as toolkit
-for the user interface. It demonstrates the integration between the `.slint` UI markup and
-Rust code, how to trigger react to callbacks, get and set properties and use basic widgets.
+## Build
 
-## Usage
-
-1. Install Rust by following the [Rust Getting Started Guide](https://www.rust-lang.org/learn/get-started).
-   Once this is done, you should have the ```rustc``` compiler and the ```cargo``` build system installed in your path.
-2. Install [`cargo-generate`](https://github.com/cargo-generate/cargo-generate)
-    ```
-    cargo install cargo-generate
-    ```
-3. Set up a sample project with this template
-    ```
-    cargo generate --git slint-ui/slint-rust-template --name my-project
-    cd my-project
-    ```
-4. Install dependencies
+1. Install dependencies
     ```
     sudo apt install libxcb-shape0-dev libxcb-xfixes0-dev
     ```
-3. Build with cargo
+2. Build with cargo
     ```
     cargo build
     ```
-4. Run the application binary
+3. Run the application binary
      ```
      cargo run
      ```
-
-We recommend using an IDE for development, along with our [LSP-based IDE integration for `.slint` files](https://github.com/slint-ui/slint/blob/master/tools/lsp/README.md). You can also load this project directly in [Visual Studio Code](https://code.visualstudio.com) and install our [Slint extension](https://marketplace.visualstudio.com/items?itemName=Sint.slint).
-
-## Next Steps
-
-We hope that this template helps you get started and you enjoy exploring making user interfaces with Slint. To learn more
-about the Slint APIs and the `.slint` markup language check out our [online documentation](https://slint-ui.com/docs/rust/slint/).
