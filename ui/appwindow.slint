@@ -2,13 +2,28 @@
 import { MenuBar } from "menu.slint";
 import { MainContentList } from "listbox.slint";
 
+import { Button } from "std-widgets.slint";
+
 MainWindow := Window {
+
+    callback set_workspace_path();
+    callback ros_workspace_build(string);
+    callback ros_workspace_sourced(string);
+
     title: "ROS Manager";
     default-font-family: "Noto Sans";
     HorizontalLayout {
         padding: 0; spacing: 0;
-        MenuBar {}
-        MainContentList {}
+        menu := MenuBar { 
+            set_path_clicked => { root.set_workspace_path(); }
+        }
+        MainContentList {
+            request_ros_workspace_build(path) => { root.ros_workspace_build(path); } 
+            request_ros_workspace_sourced(path) => { root.ros_workspace_sourced(path); }
+            
+            // workspace_list => 
+            // item_height => 50px;
+        }
     }
 }
 

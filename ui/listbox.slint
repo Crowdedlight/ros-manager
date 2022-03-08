@@ -1,74 +1,112 @@
 import { Button, VerticalBox, ListView, HorizontalBox } from "std-widgets.slint";
 import { Skin } from "skin.slint";
 
-export MainContentList := GridLayout {
-    callback request-ros-workspace-sourced();
-    callback request-ros-workspace-build();    
+export struct WorkspaceItem := {
+    name: string,
+    nodes: int,
+    path: string,
+    ros_version: string
+}
 
-    // list box that goes col 1-2-3
-    ListView {
-        row: 1;
-        col: 1;
-        colspan: 3;
-        width: 650px;
-        height: 350px;
-        border-width: 0;
-        background: Skin.palette.mainContentList;
-        for data in [
-            { folderName: "fod4wind", folderPath: "/workspace/fod4wind_ws", NodeNum: 5},
-            { folderName: "genius", folderPath: "/workspace/genius_ws", NodeNum: 8},
-            { folderName: "healthdrone", folderPath: "/workspace/hd_ws", NodeNum: 4},
-        ] : HorizontalBox {
-            height: 50px;
-            width: (parent.width) - 20px;
-            HorizontalBox { 
-                alignment: space-between;                
-            fName := Text {
-                text: data.folderName;
-                color: #fff;
-                vertical-alignment: center;
-                font-size: Skin.MediumFont;
-            }
-            fPath := Text {
-                text: data.folderPath;
-                color: #fff;
-                vertical-alignment: center;
-                horizontal-alignment: left;
-                font-size: Skin.MediumFont;
-            }
-            wsNodeNum := Text {
-                text: "Nodes: " + data.NodeNum;
-                color: #fff;
-                vertical-alignment: center;
-                horizontal-alignment: left;
-                font-size: Skin.MediumFont;
-            }
+WorkspaceRow := HorizontalBox {
+    callback clicked_workspace_source(string);
+    callback clicked_workspace_build(string);
+
+    property <string> folderName;
+    property <string> folderPath;
+    property <int> NodeNum;
+    
+    height: 50px;
+    
+    HorizontalBox { 
+        alignment: space-between;
+        spacing: 50px;                
+        fName := Text {
+            text: folderName;
+            color: #fff;
+            min-width: 80px;
+            vertical-alignment: center;
+            horizontal-alignment: left;
+            font-size: Skin.MediumFont;
         }
-            Button { 
-                text: "source";
-                width: 75pt;
-                ma := TouchArea {}
-                background: ma.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
-
-                clicked => {request-ros-workspace-sourced();}
-            }
-            Button {
-                text: "build";
-                width: 75pt;
-                ma2 := TouchArea {}
-                background: ma2.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
-                clicked => { request-ros-workspace-build(); }
-            }
+        fPath := Text {
+            text: folderPath;
+            color: #fff;
+            preferred-width: root.width * 0.32;//220px;
+            vertical-alignment: center;
+            horizontal-alignment: left;
+            overflow: elide;
+            font-size: Skin.MediumFont;
+        }
+        wsNodeNum := Text {
+            text: "Nodes: " + NodeNum;
+            color: #fff;
+            // preferred-width: root.width * 0.10; //50px;
+            vertical-alignment: center;
+            horizontal-alignment: left;
+            font-size: Skin.MediumFont;
         }
     }
+    Button { 
+        text: "🚀 source";
+        width: 75pt;
+        ma := TouchArea {
+            clicked => { root.clicked_workspace_source(fPath.text); }
+        }
+        background: ma.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
+    }
+    Button {
+        text: "🏗️ build";
+        width: 75pt;
+        ma2 := TouchArea {
+            clicked => { root.clicked_workspace_build(fPath.text); }
+        }
+        background: ma2.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
+    }
+}
+
+export MainContentList := HorizontalLayout {
+    callback request_ros_workspace_sourced(string);
+    callback request_ros_workspace_build(string);   
+
+    property <physical-length> item_height: 50px;
+    
+    property <[WorkspaceItem]> workspace_list: [
+        { name: "fod4wind", path: "/workspace/fod4wind_ws", nodes: 5, ros_version: "foxy"},
+        { name: "genius", path: "/workspace/genius_Ws", nodes: 8, ros_version: "noetic"},
+        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+        { name: "genius", path: "/workspace/genius_ws", nodes: 4, ros_version: "noetic"},
+        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+        { name: "test2", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+        { name: "genius", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+        { name: "end", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
+    ];
+
+    Flickable { 
+        preferred-width: 700px;
+        preferred-height: 350px;
+        viewport-height: (root.item_height * (workspace_list.length)) > parent.height ? root.item_height * (workspace_list.length) : parent.height;
+        
+        Rectangle { 
+            width: parent.width;
+            vertical-stretch: 1;
+            horizontal-stretch: 1;
+            background: Skin.palette.mainContentList;
+            
+            VerticalLayout { 
+                // populate it
+                for ws[i] in workspace_list : WorkspaceRow {
+                    folderName: ws.name;
+                    folderPath: ws.path;
+                    NodeNum: ws.nodes;
+                    clicked_workspace_source(path) => { root.request-ros-workspace-sourced(path) }
+                    clicked_workspace_build(path) => { root.request-ros-workspace-build(path) }
+                }
+            }
+        }
+
+    }
 }   
-
-
-// Text {
-//     text: "Source";
-//     color: #fff;
-//     horizontal-alignment: TextHorizontalAlignment.center;
-//     vertical-alignment: TextVerticalAlignment.center;
-//     font-size: Skin.MediumFont;
-//     font-family: "Noto Sans";
-// }

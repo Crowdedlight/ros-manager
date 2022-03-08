@@ -1,7 +1,7 @@
 import {Skin} from "skin.slint";
 import { Button } from "std-widgets.slint";
 
-export MenuItem := Rectangle {
+MenuItem := Rectangle {
     property <image> icon <=> i.source;
     property<string> name <=> t.text;
     property<bool> active;
@@ -24,11 +24,11 @@ export MenuItem := Rectangle {
     }
 }
 
-export BottomMenuItem := Rectangle {
+BottomMenuItem := Rectangle {
     property <image> icon <=> i.source;
-    property<string> name <=> t.text;
+    property <string> name <=> btn.text;
     property <string> type;
-    callback clicked;
+    callback btn_clicked;
     
     HorizontalLayout {
         alignment: center;
@@ -40,16 +40,19 @@ export BottomMenuItem := Rectangle {
             width: 14px; // Skin.cpp sets 14 pixels for MenuBarGraphicLabel::Graphic
             height: source.height * 1px;
         }
-        t := Button {
-            ma := TouchArea {}
+        btn := Button {
+            ma := TouchArea {
+                clicked => { root.btn-clicked() }
+            }
             background: ma.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
             font-size: Skin.MediumFont;
-            clicked => { root.clicked() }
         }
     }
 }
+
 export MenuBar := Rectangle {
-    callback set-workspace-path;
+    callback set_path_clicked;
+    callback clicked_test;
 
     background: Skin.palette.menuBar;
     property<int> active: 0;
@@ -68,24 +71,28 @@ export MenuBar := Rectangle {
             padding-bottom: 14px;
 
             Image {
-                source: @image-url("images/newLogodiscord.png");
+                source: @image-url("../images/newLogodiscord.png");
                 height: 100px;
                 width: 100px;
             }
         }
         //###  In the original, the icon is derived from the name
         for entry[idx] in [
-            { name: "Workspaces", icon: @image-url("images/bla.png") }
+            { 
+                name: "Workspaces", 
+                // icon: @image-url("../images/newLogodiscord.png") 
+            },
         ] : MenuItem {
             name: entry.name;
-            icon: entry.icon;
+            // icon: entry.icon;
             active: root.active == idx;
         }
         Rectangle {}
         BottomMenuItem { 
-            name: "Set WS"; 
-            icon: @image-url("images/bla.png");
-            clicked => { set-workspace-path() }
+           name: "📂 Set WS"; 
+           // icon: @image-url("../images/newLogodiscord.png");
+           btn_clicked => { root.set_path_clicked(); }
         }
     }
 }
+
