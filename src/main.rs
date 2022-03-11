@@ -1,10 +1,11 @@
 
-use slint::{Model, ModelNotify};
+use slint::{Model, ModelNotify, VecModel};
 use std::rc::Rc;
+use std::cell::RefCell;
 
 slint::include_modules!();
 
-mod WorkspaceHandler;
+mod workspacehandler;
 
 // pub struct WorkspaceData {
 //     data: Rc<slint::VecModel<WorkspaceItem>>,
@@ -27,6 +28,16 @@ mod WorkspaceHandler;
 
 fn main() {
     let ui = MainWindow::new();
+    let ui_weak = ui.as_weak();
+
+    // get collection from slint as starting base
+    let ws_list_initial: Vec<WorkspaceItem> = ui.get_workspace_list().iter().collect();
+
+    let ws_state = Rc::new(RefCell::new(workspacehandler::WorkspaceState {
+        workspaces: Vec::<WorkspaceItem>::from(ws_list_initial),
+        main_window: ui_weak,
+        ws_root_path: "".to_string(),
+    }));
 
     //let ui_handle = ui.as_weak();   
     ui.on_ros_workspace_build(move |path| {
@@ -44,7 +55,7 @@ fn main() {
         .pick_folder();
 
         println!("The user choose: {:#?}", res);
-        WorkspaceHandler::workspace_changed(res.unwrap().as_path().to_str().unwrap().to_string());
+        workspace_changed(res.unwrap().as_path().to_str().unwrap().to_string());
     });
 
     ui.run();
