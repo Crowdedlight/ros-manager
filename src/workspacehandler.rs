@@ -2,22 +2,34 @@
 
 use slint::{Model, ModelNotify, VecModel, Weak};
 use std::rc::Rc;
-
-slint::include_modules!();
+use crate::ui;
 
 pub struct WorkspaceState {
-    workspaces: Vec<WorkspaceItem>,
-    main_window: slint::Weak<MainWindow>,
-    ws_root_path: String,
+    pub workspaces: Vec<ui::WorkspaceItem>,
+    pub main_window: slint::Weak<ui::MainWindow>,
+    pub ws_root_path: String,
 }
 
 impl WorkspaceState { 
     // consider making this return the updated model struct of the contents? And then have the main-rs ui thread update the ui so we don't pass ui ref around
-    fn workspace_changed(&self, ws_path: String) {
+    pub fn workspace_changed(&mut self, ws_path: String) {
         // if our workspace is changed, we reload everything
         self.ws_root_path = ws_path;
+
+        // debug
         println!("new workspace: {}", self.ws_root_path);
 
+        // load workspaces
+        self.load_workspaces();
+
+        // update gui
+        self.update_gui();
+    }
+
+    fn update_gui(&self) {
+        // save and push list
+        let test = Rc::new(slint::VecModel::<ui::WorkspaceItem>::from(self.workspaces.clone()));
+        self.main_window.unwrap().set_workspace_list(test.into());
     }
 
     fn load_workspaces(&self) {
@@ -27,9 +39,8 @@ impl WorkspaceState {
 
         // make new WorkspaceItem per item
 
-        // save and push list
-        let test = Rc::new(slint::VecModel::<WorkspaceItem>::from(self.workspaces));
-        self.main_window.unwrap().set_workspace_list(test.into());
+        // save list in self
+        // self.workspaces = ;
     }
 
     fn get_nodes_in_ws(path: String) -> u16 {

@@ -1,10 +1,11 @@
 
-use slint::{Model, ModelNotify, VecModel};
+use slint::{Model, ModelNotify, VecModel, ComponentHandle};
+use std::borrow::{Borrow, BorrowMut};
 use std::rc::Rc;
 use std::cell::RefCell;
 
-slint::include_modules!();
 
+mod ui;
 mod workspacehandler;
 
 // pub struct WorkspaceData {
@@ -27,17 +28,17 @@ mod workspacehandler;
 // }
 
 fn main() {
-    let ui = MainWindow::new();
-    let ui_weak = ui.as_weak();
+    let ui = ui::MainWindow::new();
+    let ui_weak: slint::Weak<ui::MainWindow> = ui.as_weak();
 
     // get collection from slint as starting base
-    let ws_list_initial: Vec<WorkspaceItem> = ui.get_workspace_list().iter().collect();
+    let ws_list_initial: Vec<ui::WorkspaceItem> = ui.get_workspace_list().iter().collect();
 
-    let ws_state = Rc::new(RefCell::new(workspacehandler::WorkspaceState {
-        workspaces: Vec::<WorkspaceItem>::from(ws_list_initial),
+    let ws_state = RefCell::new(workspacehandler::WorkspaceState {
+        workspaces: Vec::<ui::WorkspaceItem>::new(),
         main_window: ui_weak,
         ws_root_path: "".to_string(),
-    }));
+    });
 
     //let ui_handle = ui.as_weak();   
     ui.on_ros_workspace_build(move |path| {
@@ -54,8 +55,11 @@ fn main() {
         // .set_directory(&path)
         .pick_folder();
 
+        // debug
         println!("The user choose: {:#?}", res);
-        workspace_changed(res.unwrap().as_path().to_str().unwrap().to_string());
+
+        let mut state = ws_state.borrow_mut();
+        state.workspace_changed(res.unwrap().as_path().to_str().unwrap().to_string());
     });
 
     ui.run();
