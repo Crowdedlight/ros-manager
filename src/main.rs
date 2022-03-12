@@ -1,31 +1,13 @@
 
-use slint::{Model, ModelNotify, VecModel, ComponentHandle};
-use std::borrow::{Borrow, BorrowMut};
-use std::rc::Rc;
-use std::cell::RefCell;
+use slint::{Model, ComponentHandle};
+use std::{cell::RefCell, rc};
+
+use crate::terminalhandler::launch_sourced;
 
 
 mod ui;
 mod workspacehandler;
-
-// pub struct WorkspaceData {
-//     data: Rc<slint::VecModel<WorkspaceItem>>,
-//     notify: ModelNotify,
-// }
-
-// impl WorkspaceData {
-    // fn push_job(&self, title: slint::SharedString) {
-    //     self.data.push(PrinterQueueItem {
-    //         status: "WAITING...".into(),
-    //         progress: 0,
-    //         title,
-    //         owner: env!("CARGO_PKG_AUTHORS").into(),
-    //         pages: 1,
-    //         size: "100kB".into(),
-    //         submission_date: current_time(),
-    //     })
-    // }
-// }
+mod terminalhandler;
 
 fn main() {
     let ui = ui::MainWindow::new();
@@ -34,19 +16,27 @@ fn main() {
     // get collection from slint as starting base
     let ws_list_initial: Vec<ui::WorkspaceItem> = ui.get_workspace_list().iter().collect();
 
-    let ws_state = RefCell::new(workspacehandler::WorkspaceState {
-        workspaces: Vec::<ui::WorkspaceItem>::new(),
+    let ws_state = rc::Rc::new(RefCell::new(workspacehandler::WorkspaceState {
+        workspaces: Vec::<ui::WorkspaceItem>::from(ws_list_initial),
         main_window: ui_weak,
         ws_root_path: "".to_string(),
-    });
+    }));
 
     //let ui_handle = ui.as_weak();   
     ui.on_ros_workspace_build(move |path| {
         println!("{path}");
     });
 
+    let state_weak = ws_state.clone();
     ui.on_ros_workspace_sourced(move |path| {
         println!("{path}");
+        // get workspace item so we can pass it to terminal handler
+        let state = state_weak.borrow();
+        let ws_item = state.get_ws_item_from_path(path);
+
+        if ws_item.is_some() {
+            launch_sourced(ws_item.unwrap());            
+        }
     });
     
     ui.on_set_workspace_path(move || {
@@ -57,6 +47,11 @@ fn main() {
 
         // debug
         println!("The user choose: {:#?}", res);
+
+        // avoid panic if none is chosen and we just close dialog
+        if res.is_none() {
+            return;
+        }
 
         let mut state = ws_state.borrow_mut();
         state.workspace_changed(res.unwrap().as_path().to_str().unwrap().to_string());
