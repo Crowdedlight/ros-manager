@@ -1,8 +1,10 @@
 
 
 use slint::{SharedString};
-use std::{rc::Rc, fs, path::PathBuf};
+use std::{rc::Rc, fs, path::{PathBuf, Path}, fs::File};
 use crate::ui;
+use glob::glob;
+use std::io::{self, prelude::*, BufReader};
 
 pub struct WorkspaceState {
     pub workspaces: Vec<ui::WorkspaceItem>,
@@ -61,8 +63,13 @@ impl WorkspaceState {
             list.push(new_ws);
         }
 
-        // save list in self
+        // save list in self 
         self.workspaces = list;
+
+        // DEBUG
+        for entry in &self.workspaces {
+            println!("Path: {:?}, Version: {:?}, Nodes: {:?}", entry.path, entry.ros_version, entry.nodes);
+        }
     }
 
     fn get_nodes_in_ws(&self, path: &PathBuf) -> i32 {
@@ -78,7 +85,8 @@ impl WorkspaceState {
         // read files in src
         for file in fs::read_dir(src_path).unwrap() {
             let entry = file.unwrap();
-            if entry.metadata().unwrap().is_dir() {
+            // we assume any directory or symlinks in "src" is for a node
+            if entry.metadata().unwrap().is_dir() || entry.metadata().unwrap().is_symlink() {
                 count += 1;
             }
         }
@@ -87,10 +95,36 @@ impl WorkspaceState {
     }
 
     fn get_ros_version(&self, path: &PathBuf) -> String {
-        // given the path to the workspace, figure out of its a ros1 or ros2 workspace, and if we are melodic or foxy? Any files that would tell us? 
-        //  Like maybe read the first node in src, and see if we can figure it out from package.xml or something?
-    
-        return "".to_string();
+        // given the path to the workspace, figure out of its a ros1 or ros2 workspace
+        // let mut pathPackage = path.join("/**/package.xml");
+        let mut pathPackage = String::from(path.to_string_lossy());
+        pathPackage = pathPackage + "/src/**/package.xml";
+
+        // find the first package.xml in src/*/
+        let mut packageFile = PathBuf::new();
+
+        for entry in glob(&pathPackage).expect("Failed to find ros version") {
+            match entry {
+                Ok(path) => {packageFile = path; break;},
+                Err(e) => println!("{:?}", e),
+            }
+        }
+        
+        // open file on the first path, as any package.xml should tell us ros version
+        let file = File::open(packageFile).unwrap(); 
+        let reader = BufReader::new(file);
+        
+        let mut ver = "";
+        for line in reader.lines(){
+            let line = line.unwrap();
+
+            match line {
+                s if s.contains("catkin") => {ver = "ROS1"; break;},
+                s if s.contains("ament_cmake") => {ver = "ROS2"; break;},
+                _ => ver = "ERR",
+            }
+        }
+        return ver.to_string();
     }
 
     pub fn get_ws_item_from_path(&self, path : SharedString) -> Option<&ui::WorkspaceItem> {

@@ -10,6 +10,8 @@ build = "build.rs"
 [dependencies]
 slint = "0.2"
 rfd = "0.7.0"
+regex = "1.5"
+glob = "0.3.0"
 
 [build-dependencies]
 slint-build = "0.2"
