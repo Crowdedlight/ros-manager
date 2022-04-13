@@ -5,7 +5,6 @@ use std::{cell::RefCell, rc};
 use crate::terminalhandler::launch_sourced;
 use crate::terminalhandler::launch_build;
 
-
 mod ui;
 mod workspacehandler;
 mod terminalhandler;

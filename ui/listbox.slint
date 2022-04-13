@@ -14,6 +14,7 @@ WorkspaceRow := HorizontalBox {
 
     property <string> folderName;
     property <string> folderPath;
+    property <string> rosVersion;
     property <int> NodeNum;
     
     height: 50px;
@@ -22,7 +23,7 @@ WorkspaceRow := HorizontalBox {
         alignment: space-between;
         spacing: 50px;                
         fName := Text {
-            text: folderName;
+            text: folderName + " (" + rosVersion + ")";
             color: #fff;
             min-width: 80px;
             vertical-alignment: center;
@@ -89,6 +90,7 @@ export MainContentList := HorizontalLayout {
                 for ws[i] in workspace_list : WorkspaceRow {
                     folderName: ws.name;
                     folderPath: ws.path;
+                    rosVersion: ws.ros_version;
                     NodeNum: ws.nodes;
                     clicked_workspace_source(path) => { root.request-ros-workspace-sourced(path) }
                     clicked_workspace_build(path) => { root.request-ros-workspace-build(path) }

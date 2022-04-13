@@ -3,6 +3,7 @@ use crate::ui;
 use crate::workspacehandler;
 use std::process::Command;
 use std::env;
+use std::path::Path;
 
 pub fn launch_sourced(item : &ui::WorkspaceItem) {
     // find default shell and ros-version source path
@@ -10,10 +11,28 @@ pub fn launch_sourced(item : &ui::WorkspaceItem) {
     let rosver = get_ros_version_source_path(item.ros_version.to_string(), &shell);
 
     // depending on ros-version, we either find path for devel/setup.zsh or install/setup.zsh
-    // TODO find the path needed, then we add it to the command line, before cd
-    
+    let setup_folder_name;
+    match item.ros_version.as_str() {
+        "ROS1" => setup_folder_name = "devel",
+        "ROS2" => setup_folder_name = "install",
+        _ => setup_folder_name = "",
+    }
 
-    let command = format!("{} -c 'source {}; cd {}; exec $SHELL -i'", shell, rosver, item.path.as_str());
+    // check if folder exists, then source it
+    let ws_devel_string = format!("{}/{}/setup.{}",item.path, setup_folder_name, shell);
+    let ws_setup_path = Path::new(&ws_devel_string);
+    let ws_setup_exists = ws_setup_path.is_file();
+
+    // Make string of command we execute
+    let command;
+
+    // change command depending if devel path exists or not
+    if ws_setup_exists {
+        command = format!("{} -c 'source {}; cd {}; source {}; exec $SHELL -i'", shell, rosver, item.path.as_str(), ws_devel_string);    
+    } else {
+        command = format!("{} -c 'source {}; cd {}; exec $SHELL -i'", shell, rosver, item.path.as_str());
+    }
+
     println!("{:?}", command);
 
     Command::new("x-terminal-emulator")
