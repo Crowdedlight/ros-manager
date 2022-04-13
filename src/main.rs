@@ -3,6 +3,7 @@ use slint::{Model, ComponentHandle};
 use std::{cell::RefCell, rc};
 
 use crate::terminalhandler::launch_sourced;
+use crate::terminalhandler::launch_build;
 
 
 mod ui;
@@ -22,16 +23,23 @@ fn main() {
         ws_root_path: "".to_string(),
     }));
 
-    //let ui_handle = ui.as_weak();   
+    // clone weak reference as we move it into the function and can't use it afterwards
+    let state_build_weak = ws_state.clone(); 
     ui.on_ros_workspace_build(move |path| {
-        println!("{path}");
+        // get workspace item so we can pass it to terminal handler
+        let state = state_build_weak.borrow();
+        let ws_item = state.get_ws_item_from_path(path);
+
+        if ws_item.is_some() {
+            launch_build(ws_item.unwrap());            
+        }
     });
 
-    let state_weak = ws_state.clone();
+    // clone weak reference as we move it into the function and can't use it afterwards
+    let state_source_weak = ws_state.clone();
     ui.on_ros_workspace_sourced(move |path| {
-        println!("{path}");
         // get workspace item so we can pass it to terminal handler
-        let state = state_weak.borrow();
+        let state = state_source_weak.borrow();
         let ws_item = state.get_ws_item_from_path(path);
 
         if ws_item.is_some() {
