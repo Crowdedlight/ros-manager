@@ -1,6 +1,5 @@
 
 use crate::ui;
-use crate::workspacehandler;
 use std::process::Command;
 use std::env;
 use std::path::Path;

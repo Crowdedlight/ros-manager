@@ -1,22 +1,29 @@
 
 
 use slint::{SharedString};
-use std::{rc::Rc, fs, path::{PathBuf, Path}, fs::File};
+use std::{rc::Rc, fs, path::{PathBuf}, fs::File};
 use crate::ui;
 use glob::glob;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{prelude::*, BufReader};
+
+use crate::config::Cfg;
 
 pub struct WorkspaceState {
     pub workspaces: Vec<ui::WorkspaceItem>,
     pub main_window: slint::Weak<ui::MainWindow>,
     pub ws_root_path: String,
+    pub settings: Cfg,
 }
 
 impl WorkspaceState { 
     // consider making this return the updated model struct of the contents? And then have the main-rs ui thread update the ui so we don't pass ui ref around
     pub fn workspace_changed(&mut self, ws_path: String) {
         // if our workspace is changed, we reload everything
-        self.ws_root_path = ws_path;
+        self.ws_root_path = ws_path.clone();
+
+        // write to config file
+        self.settings.ws_root_path = ws_path.clone();
+        self.settings.save();
 
         // load workspaces
         self.load_workspaces();
@@ -31,12 +38,15 @@ impl WorkspaceState {
         self.main_window.unwrap().set_workspace_list(test.into());
     }
 
-    fn load_workspaces(&mut self) {
+    pub fn load_workspaces(&mut self) {
         //let mut workspaces: VecModel<WorkspaceItem> = self.main_window.unwrap().get_workspace_list().iter().collect();
         // new empty vector
         let mut list = Vec::<ui::WorkspaceItem>::new();
     
-        // load workspaces from root path
+        // load workspaces from root path if string is not empty
+        // TODO better error handling... should look into try catch, as maybe someone sets a path that doesn't exist
+        if self.ws_root_path == "" {return;}
+
         for file in fs::read_dir(self.ws_root_path.as_str()).unwrap() {
 
             let entry = file.unwrap();
@@ -65,6 +75,9 @@ impl WorkspaceState {
 
         // save list in self 
         self.workspaces = list;
+
+        // update gui
+        self.update_gui();
 
         // DEBUG
         for entry in &self.workspaces {
@@ -96,14 +109,14 @@ impl WorkspaceState {
 
     fn get_ros_version(&self, path: &PathBuf) -> String {
         // given the path to the workspace, figure out of its a ros1 or ros2 workspace
-        // let mut pathPackage = path.join("/**/package.xml");
-        let mut pathPackage = String::from(path.to_string_lossy());
-        pathPackage = pathPackage + "/src/**/package.xml";
+        // let mut path_package = path.join("/**/package.xml");
+        let mut path_package = String::from(path.to_string_lossy());
+        path_package = path_package + "/src/**/package.xml";
 
         // find the first package.xml in src/*/
         let mut packageFile = PathBuf::new();
 
-        for entry in glob(&pathPackage).expect("Failed to find ros version") {
+        for entry in glob(&path_package).expect("Failed to find ros version") {
             match entry {
                 Ok(path) => {packageFile = path; break;},
                 Err(e) => println!("{:?}", e),
@@ -111,7 +124,10 @@ impl WorkspaceState {
         }
         
         // open file on the first path, as any package.xml should tell us ros version
-        let file = File::open(packageFile).unwrap(); 
+        // TODO make it able to handle empty workspaces... Will currently crash it.
+        //  Will tie into making it use Result<> properly so high level can just omit empties
+        println!("{:?}, package:{:?}", packageFile, path_package);
+        let file = File::open(packageFile).unwrap();
         let reader = BufReader::new(file);
         
         let mut ver = "";

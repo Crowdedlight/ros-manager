@@ -10,19 +10,7 @@ MainWindow := Window {
     callback ros_workspace_build(string);
     callback ros_workspace_sourced(string);
 
-    property <[WorkspaceItem]> workspace_list: [
-        { name: "fod4wind", path: "/workspace/fod4wind_ws", nodes: 5, ros_version: "foxy"},
-        { name: "genius", path: "/workspace/genius_Ws", nodes: 8, ros_version: "noetic"},
-        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-        { name: "genius", path: "/workspace/genius_ws", nodes: 4, ros_version: "noetic"},
-        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-        { name: "healthdrone", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-        { name: "test2", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-        { name: "genius", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-        { name: "end", path: "/workspace/healthdrone_ws", nodes: 4, ros_version: "noetic"},
-    ];
+    property <[WorkspaceItem]> workspace_list: [];
 
     title: "ROS Manager";
     default-font-family: "Noto Sans";
