@@ -11,6 +11,7 @@ Ideas:
 * include showing launch files? or maybe choose launch files too?
 
 ## Build
+**Assuming you have Rust and cargo installed: https://www.rust-lang.org/tools/install**
 
 1. Install dependencies
     ```
