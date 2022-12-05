@@ -1,7 +1,7 @@
 
 
 use slint::{SharedString};
-use std::{rc::Rc, fs, path::{PathBuf}, fs::File};
+use std::{rc::Rc, fs, path::{PathBuf}, fs::File, io};
 use crate::ui;
 use glob::glob;
 use std::io::{prelude::*, BufReader};
@@ -38,6 +38,19 @@ impl WorkspaceState {
         self.main_window.unwrap().set_workspace_list(test.into());
     }
 
+    fn is_src_exist(&self, mut path: PathBuf) -> io::Result<bool>{
+        path.push("src");
+        let metadata = fs::metadata(path)?;
+        Ok(metadata.is_dir())
+    }
+
+    fn is_src_empty(&self, mut path: PathBuf) -> io::Result<bool>{
+        path.push("src");
+        let is_empty = path.read_dir()?.next().is_none();
+        Ok(is_empty)
+    }
+
+
     pub fn load_workspaces(&mut self) {
         //let mut workspaces: VecModel<WorkspaceItem> = self.main_window.unwrap().get_workspace_list().iter().collect();
         // new empty vector
@@ -52,6 +65,11 @@ impl WorkspaceState {
             let entry = file.unwrap();
             // if not dir, we skip, we are only looking at dirs here...
             if entry.metadata().unwrap().is_file() {
+                continue;
+            }
+
+            // if dir is empty, src does not exist, or src is empty, we skip
+            if self.is_src_exist(entry.path()).is_ok() || self.is_src_empty(entry.path()).is_ok() {
                 continue;
             }
 
@@ -123,13 +141,17 @@ impl WorkspaceState {
             }
         }
         
+        // println!("{:?}, package:{:?}", packageFile, path_package);
+
+        // Exit if file doesn't exist, err.
+        if packageFile.as_os_str().is_empty() {
+            return "ERR".to_string();
+        }
+
         // open file on the first path, as any package.xml should tell us ros version
-        // TODO make it able to handle empty workspaces... Will currently crash it.
-        //  Will tie into making it use Result<> properly so high level can just omit empties
-        println!("{:?}, package:{:?}", packageFile, path_package);
         let file = File::open(packageFile).unwrap();
         let reader = BufReader::new(file);
-        
+
         let mut ver = "";
         for line in reader.lines(){
             let line = line.unwrap();
