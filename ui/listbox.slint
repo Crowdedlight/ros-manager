@@ -1,0 +1,102 @@
+import { Button, VerticalBox, ListView, HorizontalBox } from "std-widgets.slint";
+import { Skin } from "skin.slint";
+
+export struct WorkspaceItem := {
+    name: string,
+    nodes: int,
+    path: string,
+    ros_version: string
+}
+
+WorkspaceRow := HorizontalBox {
+    callback clicked_workspace_source(string);
+    callback clicked_workspace_build(string);
+
+    property <string> folderName;
+    property <string> folderPath;
+    property <string> rosVersion;
+    property <int> NodeNum;
+    
+    height: 50px;
+    
+    HorizontalBox { 
+        alignment: space-between;
+        spacing: 50px;                
+        fName := Text {
+            text: folderName + " (" + rosVersion + ")";
+            color: #fff;
+            min-width: 80px;
+            vertical-alignment: center;
+            horizontal-alignment: left;
+            font-size: Skin.MediumFont;
+        }
+        fPath := Text {
+            text: folderPath;
+            color: #fff;
+            preferred-width: root.width * 0.32;//220px;
+            vertical-alignment: center;
+            horizontal-alignment: left;
+            overflow: elide;
+            font-size: Skin.MediumFont;
+        }
+        wsNodeNum := Text {
+            text: "Packages: " + NodeNum;
+            color: #fff;
+            // preferred-width: root.width * 0.10; //50px;
+            vertical-alignment: center;
+            horizontal-alignment: left;
+            font-size: Skin.MediumFont;
+        }
+    }
+    Button { 
+        text: "🚀 source";
+        width: 75pt;
+        ma := TouchArea {
+            clicked => { root.clicked_workspace_source(fPath.text); }
+        }
+        background: ma.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
+    }
+    Button {
+        text: "🏗️ build";
+        width: 75pt;
+        ma2 := TouchArea {
+            clicked => { root.clicked_workspace_build(fPath.text); }
+        }
+        background: ma2.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
+    }
+}
+
+export MainContentList := HorizontalLayout {
+    callback request_ros_workspace_sourced(string);
+    callback request_ros_workspace_build(string);   
+
+    property <physical-length> item_height: 50px;
+    
+    property <[WorkspaceItem]> workspace_list: [];
+
+    Flickable { 
+        preferred-width: 700px;
+        preferred-height: 350px;
+        viewport-height: (root.item_height * (workspace_list.length)) > parent.height ? root.item_height * (workspace_list.length) : parent.height;
+        
+        Rectangle { 
+            width: parent.width;
+            vertical-stretch: 1;
+            horizontal-stretch: 1;
+            background: Skin.palette.mainContentList;
+            
+            VerticalLayout { 
+                // populate it
+                for ws[i] in workspace_list : WorkspaceRow {
+                    folderName: ws.name;
+                    folderPath: ws.path;
+                    rosVersion: ws.ros_version;
+                    NodeNum: ws.nodes;
+                    clicked_workspace_source(path) => { root.request-ros-workspace-sourced(path) }
+                    clicked_workspace_build(path) => { root.request-ros-workspace-build(path) }
+                }
+            }
+        }
+
+    }
+}   

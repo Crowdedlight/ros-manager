@@ -11,6 +11,7 @@ Ideas:
 * include showing launch files? or maybe choose launch files too?
 
 ## Build
+**Assuming you have Rust and cargo installed: https://www.rust-lang.org/tools/install**
 
 1. Install dependencies
     ```
@@ -24,3 +25,27 @@ Ideas:
      ```
      cargo run
      ```
+
+## Using the application
+**First set the workspace root folder with ``Set WS`` button on the left hand side.**
+
+The application expects a folder structure of: 
+```
+ros_workspaces
+ -> ros1_ws
+ -> ros2_ws
+ -> ros2_project1_ws
+ -> another_ros_ws
+   -> src
+      -> package1
+      -> package2
+      ...
+ .
+ .
+ .
+```
+So essentially each ros workspace you have, should be inside the same root-folder. So you point the application
+to the root folder, and it will find all the workspaces and their packages inside each.
+
+## Known issues
+* Currently crashes if you have an workspace in the path with an empty ``src/`` folder.

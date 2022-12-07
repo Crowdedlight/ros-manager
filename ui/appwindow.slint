@@ -1,17 +1,31 @@
-import { Button, VerticalBox } from "std-widgets.slint";
 
-export AppWindow := Window {
-    property<int> counter: 42;
-    callback request-increase-value();
-    VerticalBox { 
-        Text {
-            text: "Counter: \{counter}";
+import { MenuBar } from "menu.slint";
+import { MainContentList, WorkspaceItem } from "listbox.slint";
+
+import { Button } from "std-widgets.slint";
+
+MainWindow := Window {
+
+    callback set_workspace_path();
+    callback ros_workspace_build(string);
+    callback ros_workspace_sourced(string);
+
+    property <[WorkspaceItem]> workspace_list: [];
+
+    title: "ROS Manager";
+    default-font-family: "Noto Sans";
+    HorizontalLayout {
+        padding: 0; spacing: 0;
+        menu := MenuBar { 
+            set_path_clicked => { root.set_workspace_path(); }
         }
-        Button {
-            text: "Increase value";
-            clicked => { 
-                request-increase-value();
-            }
+        MainContentList {
+            request_ros_workspace_build(path) => { root.ros_workspace_build(path); } 
+            request_ros_workspace_sourced(path) => { root.ros_workspace_sourced(path); }
+            
+            workspace-list: root.workspace_list;
+            // item_height => 50px;
         }
-     }
+    }
 }
+
