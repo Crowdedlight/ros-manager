@@ -9,6 +9,18 @@ build = "build.rs"
 
 [dependencies]
 slint = "0.2"
+rfd = "0.7.0"
+regex = "1.5"
+glob = "0.3.0"
+toml = "0.5"
+serde = { version = "1.0", features = ["derive"] }
 
 [build-dependencies]
 slint-build = "0.2"
+
+[package.metadata.appimage]
+assets = ["images", "config"]
+
+[[bin]]
+name = "ros_manager"
+path = "src/main.rs"

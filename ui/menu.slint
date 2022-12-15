@@ -1,0 +1,98 @@
+import {Skin} from "skin.slint";
+import { Button } from "std-widgets.slint";
+
+MenuItem := Rectangle {
+    property <image> icon <=> i.source;
+    property<string> name <=> t.text;
+    property<bool> active;
+    ma := TouchArea {}
+    background: active ? rgba(100%, 100%, 100%, 14%) : ma.has-hover ? rgba(100%, 100%, 100%, 9%) : transparent;
+    HorizontalLayout {
+        alignment: center;
+        spacing: 0px;
+        padding: 8px;
+        padding-left: 0px;
+        padding-right: 10px;
+        i := Image {
+            width: 14px; // Skin.cpp sets 14 pixels for MenuBarGraphicLabel::Graphic
+            height: source.height * 1px;
+        }
+        t := Text {
+            color: white;
+            font-size: Skin.MediumFont;
+        }
+    }
+}
+
+BottomMenuItem := Rectangle {
+    property <image> icon <=> i.source;
+    property <string> name <=> btn.text;
+    property <string> type;
+    callback btn_clicked;
+    
+    HorizontalLayout {
+        alignment: center;
+        spacing: 0px;
+        padding: 8px;
+        padding-left: 0px;
+        padding-right: 10px;
+        i := Image {
+            width: 14px; // Skin.cpp sets 14 pixels for MenuBarGraphicLabel::Graphic
+            height: source.height * 1px;
+        }
+        btn := Button {
+            ma := TouchArea {
+                clicked => { root.btn-clicked() }
+            }
+            background: ma.has-hover ? rgba(100%, 100%, 100%, 50%) : Skin.palette.button;
+            font-size: Skin.MediumFont;
+        }
+    }
+}
+
+export MenuBar := Rectangle {
+    callback set_path_clicked;
+    callback clicked_test;
+
+    background: Skin.palette.menuBar;
+    property<int> active: 0;
+    min-width: 140px;
+    VerticalLayout {
+        padding-left: 0px;
+        padding-top: 0px;
+        padding-right: 0px;
+        padding-bottom: 12px;
+        spacing: 8px;
+        VerticalLayout {
+            // Margin hint for MenuBarTopLabel::Graphic
+            padding-left: 20px;
+            padding-top: 0px;
+            padding-right: 10px;
+            padding-bottom: 14px;
+
+            Image {
+                source: @image-url("../images/newLogodiscord.png");
+                height: 100px;
+                width: 100px;
+            }
+        }
+        //###  In the original, the icon is derived from the name
+        for entry[idx] in [
+            { 
+                name: "Workspaces", 
+                // icon: @image-url("../images/newLogodiscord.png") 
+            },
+        ] : MenuItem {
+            name: entry.name;
+            // icon: entry.icon;
+            active: root.active == idx;
+        }
+        Rectangle {}
+        BottomMenuItem { 
+           name: "📂 Set WS"; 
+           // icon: @image-url("../images/newLogodiscord.png");
+           btn_clicked => { root.set_path_clicked(); }
+        }
+    }
+}
+
