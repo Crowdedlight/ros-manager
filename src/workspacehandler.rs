@@ -69,7 +69,8 @@ impl WorkspaceState {
             }
 
             // if dir is empty, src does not exist, or src is empty, we skip
-            if self.is_src_exist(entry.path()).is_ok() || self.is_src_empty(entry.path()).is_ok() {
+            if !self.is_src_exist(entry.path()).unwrap() || self.is_src_empty(entry.path()).unwrap() {
+                println!("ERR: dir is empty, src doesn't exist or src is empty...");
                 continue;
             }
 
