@@ -47,5 +47,7 @@ ros_workspaces
 So essentially each ros workspace you have, should be inside the same root-folder. So you point the application
 to the root folder, and it will find all the workspaces and their packages inside each.
 
+## Deploy
+Requires appimage tool.... TODO
+
 ## Known issues
-* Currently crashes if you have an workspace in the path with an empty ``src/`` folder.
